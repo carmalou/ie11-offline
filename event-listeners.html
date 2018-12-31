@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>IE11 Online Event Listener</title>
+    </head>
+<body>
+
+<h1>Try turning the internet on and off again.</h1>
+
+<script>
+    document.body.addEventListener('online', function(e) {
+        console.log('e', e);
+        alert('You are online!');
+    });
+
+    document.body.addEventListener('offline', function(e) {
+        console.log('e', e);
+        alert('You are offline!');
+    });
+</script>
+
+</body>
+</html>
