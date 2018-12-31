@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>IE11 IndexedDB</title>
+    </head>
+<body>
+
+<h1>Here is an IndexedDB example</h1>
+
+<button id="getAll">Get All Data</button>
+
+<script>
+    function generateDB() {
+        var db = window.indexedDB.open('personDB', 1);
+
+        db.onupgradeneeded = function(event) {
+            var tmpDb = request.result;
+            var personStore = tmpDb.createObjectStore("person", {keyPath: 'name'});
+
+            personStore.createIndex('name', {unique: true});
+            personStore.createIndex('age');
+            personStore.createIndex('favoriteColor');
+
+            tmpDb.onsuccess = function(e) {
+                // populate data
+                var arrOfObjs = [
+                    {
+                        'name': 'carmen',
+                        'age': 27,
+                        'favoriteColor': 'green'
+                    },
+                    {
+                        'name': 'devin',
+                        'age': 27,
+                        'favoriteColor': 'red'
+                    },
+                    {
+                        'name': 'margaret',
+                        'age': 22,
+                        'favoriteColor': 'blue'
+                    }
+                ];
+
+                arrOfObjs.forEach(function(obj) {
+                    e.target.result.add(obj);
+                });
+            }
+        }
+    }
+
+    function getData(e) {
+        var db = window.indexedDB.open('personDB');
+        var arr = [];
+        
+        db.onsuccess = function(event) {
+            var result = event.target.result;
+            var transaction = db.transaction("person", "readonly");
+            var objectStore = transaction.objectStore("person");
+            var request = objectStore.openCursor();
+
+            request.onsuccess = function(cursor) {
+                if(cursor) {
+                    arr.push(cursor);
+                    console.log('cursor ', cursor);
+                    cursor.continue();
+                } else {
+                    return arr;
+                }
+            }
+        }
+    }
+
+    generateDB();
+
+    document.getElementById('getAll').addEventListener('click', getData);
+</script>
+
+</body>
+</html>
