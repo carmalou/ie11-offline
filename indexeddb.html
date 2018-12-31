@@ -14,37 +14,48 @@
         var db = window.indexedDB.open('personDB', 1);
 
         db.onupgradeneeded = function(event) {
-            var tmpDb = request.result;
+            var tmpDb = event.target.result;
             var personStore = tmpDb.createObjectStore("person", {keyPath: 'name'});
 
-            personStore.createIndex('name', {unique: true});
-            personStore.createIndex('age');
-            personStore.createIndex('favoriteColor');
+            personStore.createIndex('name', 'name', {unique: true});
+            personStore.createIndex('age', 'age');
+            personStore.createIndex('favoriteColor', 'favoriteColor');
+        }
 
-            tmpDb.onsuccess = function(e) {
-                // populate data
-                var arrOfObjs = [
-                    {
-                        'name': 'carmen',
-                        'age': 27,
-                        'favoriteColor': 'green'
-                    },
-                    {
-                        'name': 'devin',
-                        'age': 27,
-                        'favoriteColor': 'red'
-                    },
-                    {
-                        'name': 'margaret',
-                        'age': 22,
-                        'favoriteColor': 'blue'
-                    }
-                ];
+        db.onsuccess = function(e) {
+            seedData();
+        }
+    }
 
-                arrOfObjs.forEach(function(obj) {
-                    e.target.result.add(obj);
-                });
-            }
+    function seedData() {
+        var db = window.indexedDB.open('personDB');
+        
+        db.onsuccess = function(e) {
+            var result = e.target.result;
+            var transaction = result.transaction("person", "readwrite");
+            var objectStore = transaction.objectStore("person");
+            // populate data
+            var arrOfObjs = [
+                {
+                    'name': 'carmen',
+                    'age': 27,
+                    'favoriteColor': 'green'
+                },
+                {
+                    'name': 'devin',
+                    'age': 27,
+                    'favoriteColor': 'red'
+                },
+                {
+                    'name': 'margaret',
+                    'age': 22,
+                    'favoriteColor': 'blue'
+                }
+            ];
+
+            arrOfObjs.forEach(function(obj) {
+                objectStore.add(obj);
+            });
         }
     }
 
@@ -52,19 +63,21 @@
         var db = window.indexedDB.open('personDB');
         var arr = [];
         
+        // how would you get the data out?
+        // can't just return it
         db.onsuccess = function(event) {
             var result = event.target.result;
-            var transaction = db.transaction("person", "readonly");
+            var transaction = result.transaction("person", "readwrite");
             var objectStore = transaction.objectStore("person");
             var request = objectStore.openCursor();
 
-            request.onsuccess = function(cursor) {
+            request.onsuccess = function(event) {
+                var cursor = event.target.result
                 if(cursor) {
-                    arr.push(cursor);
-                    console.log('cursor ', cursor);
+                    arr.push(cursor.value);
                     cursor.continue();
                 } else {
-                    return arr;
+                    // no more data!
                 }
             }
         }
